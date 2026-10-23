@@ -1,6 +1,7 @@
 from fastapi import APIRouter, File, HTTPException, UploadFile
 from app.services.pdf_service import extract_pdf_pages
 from app.services.chunking_service import chunk_pages
+from app.services.embedding_service import generate_embeddings
 
 router = APIRouter(
     prefix="/api/documents",
@@ -21,6 +22,9 @@ async def upload_document(file: UploadFile = File(...)):
     try:
         pages = extract_pdf_pages(contents)
         chunks = chunk_pages(pages)
+        chunk_texts = [chunk["text"] for chunk in chunks]
+
+        embeddings = generate_embeddings(chunk_texts)
     except Exception:
         raise HTTPException(
             status_code=400,
@@ -28,10 +32,10 @@ async def upload_document(file: UploadFile = File(...)):
         )
 
     return {
+
         "filename": file.filename,
-        "content_type": file.content_type,
-        "size_bytes": len(contents),
         "page_count": len(pages),
         "chunk_count": len(chunks),
-        "chunks": chunks,
+        "embedding_count": len(embeddings),
+        "embedding_dimensions": len(embeddings[0]) if embeddings else 0,
     }
