@@ -16,17 +16,32 @@ def generate_answer(prompt: str) -> str:
             model=MODEL_NAME,
             messages=[
                 {
+                    "role": "system",
+                    "content": (
+                        "You are an accurate AI Research Assistant. "
+                        "Follow the user's task instructions carefully. "
+                        "Use only information supported by the "
+                        "provided document context. "
+                        "Do not invent facts. "
+                        "Distinguish programming languages, "
+                        "frameworks, libraries, and runtimes correctly. "
+                        "Cite relevant sources using [Source 1], "
+                        "[Source 2], etc. "
+                        "If information is unavailable, say so."
+                    ),
+                },
+                {
                     "role": "user",
                     "content": prompt,
-                }
+                },
             ],
             options={
-                "temperature": 0.2,
-                "num_predict": 300,
+                "temperature": 0,
+                "num_predict": 700,
             },
         )
 
-        return response.message.content
+        return response.message.content or ""
 
     except Exception:
         logger.exception("Ollama answer generation failed")
